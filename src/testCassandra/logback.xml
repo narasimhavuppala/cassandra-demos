@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <!-- log INFO or higher messages to the console -->
+  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%-5p %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- log everything to a rolling file -->
+  <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>driver.log</file>
+    <encoder>
+      <pattern>%-5p [%d{ISO8601}] [%t] %F:%L - %msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>driver.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <!-- keep 30 days' worth of history -->
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    </appender>
+
+    <!-- use AsyncAppender for lower latencies -->
+    <appender name="async" class="ch.qos.logback.classic.AsyncAppender">
+      <appender-ref ref="console" />
+      <appender-ref ref="file" />
+    </appender>
+
+    <root level="TRACE">
+      <appender-ref ref="async" />
+    </root>
+    <logger name="com.datastax" level= "TRACE"/>
+    <logger name="org.apache.cassandra" level= "TRACE"/>
+</configuration>
