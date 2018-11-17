@@ -2,13 +2,16 @@ package testCassandra;
 
 
 
+import java.util.UUID;
+import java.util.stream.IntStream;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.utils.UUIDs;
 
 import testCassandra.keyspace.KeySpaceUtil;
-import testCassandra.keyspace.columnfamily.ColumnFamilyUtility;
 import testCassandra.model.Book;
 
 public class MainClass {
@@ -25,10 +28,13 @@ public class MainClass {
 		System.out.println(row.getString("release_version"));
 		
 		KeySpaceUtil.createKeyspace("test", "SimpleStrategy", 2, session);
-		ColumnFamilyUtility.createColumnFamily("test", TABLE_NAME, session);
-		
-		
-		 session.close();
+		testCassandra.columnfamily.ColumnFamilyUtility.createColumnFamily("test", TABLE_NAME, session);
+		for(int i=0; i < 10000000; i++) {
+			UUID uuid=UUIDs.timeBased();
+		//	insertbookByTitle(new Book(uuid, i +"-title"));
+			deleteBooks(uuid,i +"-title");
+		}
+		session.close();
 	}
 
 	
@@ -55,10 +61,11 @@ public class MainClass {
 	    System.out.println(rs.spliterator().getExactSizeIfKnown());
 	}
 	
-	public static  void deleteBooks(String title) {
+	public static  void deleteBooks(UUID partionKey,String title) {
 	    StringBuilder sb = new StringBuilder("delete  from ")
 	      .append("test.Books ")
-	      .append("WHERE 1=1");
+	     // .append("WHERE 1=1")
+	      .append(" WHERE id=" + partionKey);
 	 
 	    String query = sb.toString();
 	    ResultSet rs =  session.execute(query);

@@ -1,4 +1,4 @@
-package testCassandra.keyspace.columnfamily;
+package testCassandra.columnfamily;
 
 import java.util.StringJoiner;
 
