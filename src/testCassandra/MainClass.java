@@ -6,6 +6,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.utils.UUIDs;
 
 import testCassandra.keyspace.KeySpaceUtil;
 import testCassandra.keyspace.columnfamily.ColumnFamilyUtility;
@@ -17,7 +18,9 @@ public class MainClass {
 
 	public static void main(String[] args) {
 		Cluster cluster = Cluster.builder() // (1)
-				.addContactPoint("127.0.0.1").build();
+				.addContactPoint("127.0.0.1")
+				.withCredentials("cassandra", "cassandra")
+				.build();
 		session = cluster.connect(); // (2)
 
 		ResultSet rs = session.execute("select release_version from system.local"); // (3)
@@ -26,7 +29,10 @@ public class MainClass {
 		
 		KeySpaceUtil.createKeyspace("test", "SimpleStrategy", 2, session);
 		ColumnFamilyUtility.createColumnFamily("test", TABLE_NAME, session);
-		
+		for(int i=0; i < 100;i++) {
+			insertbookByTitle(new Book(UUIDs.timeBased(), "title="+i));
+		}
+		selectAllBooks();
 		
 		 session.close();
 	}
@@ -51,8 +57,9 @@ public class MainClass {
 	 
 	    String query = sb.toString();
 	    ResultSet rs =  session.execute(query);
-	    System.out.println(rs.getExecutionInfo().getTriedHosts());
-	    System.out.println(rs.spliterator().getExactSizeIfKnown());
+	  //  System.out.println(rs.getExecutionInfo().getTriedHosts());
+	    System.out.println(rs.all().size());
+	   // System.out.println(rs.spliterator().getExactSizeIfKnown());
 	}
 	
 	public static  void deleteBooks(String title) {
